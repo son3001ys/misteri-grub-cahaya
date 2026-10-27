@@ -1,0 +1,41 @@
+name: Build Misteri Grub Cahaya APK
+
+on:
+workflow_dispatch:
+push:
+paths:
+- '.github/workflows/android.yml'
+
+jobs:
+build:
+runs-on: ubuntu-latest
+
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
+
+  - name: Extract project ZIP
+    run: |
+      mkdir project
+      unzip -o MisteriGrubCahaya.zip -d project
+      find project -name gradlew -type f
+
+  - name: Set up Java
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: '17'
+
+  - name: Build APK
+    run: |
+      cd project
+      PROJECT_DIR=$(find . -name settings.gradle -type f -printf '%h\n' | head -n 1)
+      cd "$PROJECT_DIR"
+      chmod +x gradlew
+      ./gradlew assembleDebug
+
+  - name: Upload APK
+    uses: actions/upload-artifact@v4
+    with:
+      name: Misteri-Grub-Cahaya-APK
+      path: project/**/build/outputs/apk/debug/*.apk
